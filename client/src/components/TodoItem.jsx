@@ -5,7 +5,7 @@ import {
   PencilIcon,
   TrashIcon,
   CheckIcon,
-  XIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/solid";
 
 const priorityColors = {
@@ -100,7 +100,7 @@ const TodoItem = ({ todo }) => {
               onClick={() => setIsEditing(false)}
               className="p-2 text-gray-500 hover:text-gray-700"
             >
-              <XIcon className="h-5 w-5" />
+              <XMarkIcon className="h-5 w-5" />
             </button>
             <button
               onClick={handleUpdate}

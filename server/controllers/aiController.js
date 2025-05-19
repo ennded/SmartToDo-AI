@@ -6,15 +6,31 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+let availableModels = [];
+
+async function listModels() {
+  try {
+    const models = await openai.models.list();
+    availableModels = models.data.map((m) => m.id);
+    console.log("Available OpenAI Models:", availableModels);
+  } catch (err) {
+    console.error("Failed to fetch models list:", err);
+    // Fallback to commonly available models
+    availableModels = ["gpt-3.5-turbo", "gpt-4"];
+  }
+}
+
+listModels();
+
 // @desc    Get AI task suggestions
 // @route   POST /api/ai/suggest-tasks
 // @access  Private
 const suggestTasks = asyncHandler(async (req, res) => {
   const { input } = req.body;
 
-  if (!input) {
-    res.status(400);
-    throw new Error("Input is required");
+  if (!input || typeof input !== "string") {
+    res.status(400).json({ error: "Valid input is required" });
+    return;
   }
 
   const prompt = `
@@ -42,20 +58,81 @@ const suggestTasks = asyncHandler(async (req, res) => {
   `;
 
   try {
+    // Use cached models to avoid quota issues
+
+    const model = availableModels.includes("gpt-3.5-turbo")
+      ? "gpt-3.5-turbo"
+      : availableModels[0] || "gpt-3.5-turbo";
+
     const response = await openai.chat.completions.create({
-      model: "gpt-4",
+      model,
       messages: [{ role: "user", content: prompt }],
       temperature: 0.7,
+      max_tokens: 500, // Limit token usage
     });
 
     const content = response.choices[0].message.content;
-    const tasks = JSON.parse(content);
 
-    res.json(tasks);
+    if (!content) {
+      throw new Error("Empty response from OpenAI");
+    }
+
+    console.log("🧠 OpenAI Response:", content);
+
+    try {
+      const tasks = JSON.parse(content);
+      res.json(tasks);
+    } catch (parseError) {
+      console.error("JSON Parse Error:", parseError);
+      // Fallback to manual parsing if JSON fails
+      const fallbackTasks = content
+        .split("\n")
+        .filter((line) => line.trim().startsWith("-"))
+        .map((task) => ({
+          title: task.replace("-", "").trim(),
+          dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
+            .toISOString()
+            .split("T")[0],
+          priority: "Medium",
+          status: "To Do",
+        }));
+      res.json(fallbackTasks);
+    }
   } catch (err) {
     console.error("OpenAI API error:", err);
-    res.status(500);
-    throw new Error("Failed to get AI suggestions");
+
+    // Provide fallback suggestions when API fails
+
+    const fallbackResponse = [
+      {
+        title: "Research flight options",
+        dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0],
+        priority: "High",
+        status: "To Do",
+      },
+      {
+        title: "Create presentation outline",
+        dueDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0],
+        priority: "Medium",
+        status: "In Progress",
+      },
+    ];
+    if (err.status === 429) {
+      res.status(429).json({
+        error: "API quota exceeded. Using fallback suggestions.",
+        suggestions: fallbackResponse,
+        warning: "Please check your OpenAI billing",
+      });
+    } else {
+      res.status(500).json({
+        error: "API Error. Using fallback suggestions.",
+        suggestions: fallbackResponse,
+      });
+    }
   }
 });
 
@@ -63,42 +140,50 @@ const suggestTasks = asyncHandler(async (req, res) => {
 // @route   POST /api/ai/weekly-summary
 // @access  Private
 const getWeeklySummary = asyncHandler(async (req, res) => {
-  const todos = await Todo.find({
-    user: req.user._id,
-    status: "Done",
-    createdAt: {
-      $gte: new Date(new Date() - 7 * 24 * 60 * 60 * 1000),
-    },
-  });
-
-  if (todos.length === 0) {
-    res.json({ summary: "No completed tasks this week." });
-    return;
-  }
-
-  const prompt = `
-    Summarize the following completed tasks for the past week in a human-readable paragraph.
-    Highlight key achievements and patterns if any.
-    
-    Completed tasks:
-    ${todos
-      .map((todo) => `- ${todo.title} (${todo.priority} priority)`)
-      .join("\n")}
-  `;
-
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.5,
+    const todos = await Todo.find({
+      user: req.user._id,
+      status: "Done",
+      createdAt: {
+        $gte: new Date(new Date() - 7 * 24 * 60 * 60 * 1000),
+      },
     });
 
-    const summary = response.choices[0].message.content;
-    res.json({ summary });
-  } catch (err) {
-    console.error("OpenAI API error:", err);
-    res.status(500);
-    throw new Error("Failed to generate weekly summary");
+    if (todos.length === 0) {
+      res.json({ summary: "No completed tasks this week." });
+      return;
+    }
+
+    const prompt = `...`; // Your existing prompt
+
+    try {
+      const model = availableModels.includes("gpt-3.5-turbo")
+        ? "gpt-3.5-turbo"
+        : availableModels[0] || "gpt-3.5-turbo";
+
+      const response = await openai.chat.completions.create({
+        model,
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.5,
+        max_tokens: 300,
+      });
+
+      const summary = response.choices[0]?.message?.content;
+      res.json({ summary });
+    } catch (apiError) {
+      console.error("OpenAI API error:", apiError);
+      // Create manual summary if API fails
+      const manualSummary = `You completed ${
+        todos.length
+      } tasks this week including: ${todos
+        .slice(0, 3)
+        .map((t) => t.title)
+        .join(", ")}${todos.length > 3 ? " and more" : ""}.`;
+      res.json({ summary: manualSummary });
+    }
+  } catch (dbError) {
+    console.error("Database error:", dbError);
+    res.status(500).json({ error: "Failed to fetch weekly summary data" });
   }
 });
 
@@ -108,46 +193,47 @@ const getWeeklySummary = asyncHandler(async (req, res) => {
 const taskChat = asyncHandler(async (req, res) => {
   const { question } = req.body;
 
-  if (!question) {
-    res.status(400);
-    throw new Error("Question is required");
+  if (!question || typeof question !== "string") {
+    res.status(400).json({ error: "Valid question is required" });
+    return;
   }
-
-  const todos = await Todo.find({ user: req.user._id });
-
-  const prompt = `
-    Based on the following list of tasks, answer the user's question.
-    Be concise and helpful in your response.
-    
-    User's question: "${question}"
-    
-    User's tasks:
-    ${todos
-      .map(
-        (todo) =>
-          `- ${todo.title} (Status: ${todo.status}, Priority: ${
-            todo.priority
-          }, Due: ${todo.dueDate || "No due date"})`
-      )
-      .join("\n")}
-  `;
 
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.3,
-    });
+    const todos = await Todo.find({ user: req.user._id });
+    const prompt = `...`; // Your existing prompt
 
-    const answer = response.choices[0].message.content;
-    res.json({ answer });
-  } catch (err) {
-    console.error("OpenAI API error:", err);
-    res.status(500);
-    throw new Error("Failed to get AI response");
+    try {
+      // Try cheaper model first to save quota
+      const model = availableModels.includes("gpt-3.5-turbo")
+        ? "gpt-3.5-turbo"
+        : availableModels.includes("gpt-4")
+        ? "gpt-4"
+        : availableModels[0];
+
+      const response = await openai.chat.completions.create({
+        model,
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.3,
+        max_tokens: 400,
+      });
+
+      const answer = response.choices[0]?.message?.content;
+      res.json({ answer });
+    } catch (apiError) {
+      console.error("OpenAI API error:", apiError);
+      // Provide basic answer without AI
+      const basicAnswer =
+        `I can't access AI right now. Based on your ${todos.length} tasks, ` +
+        `you might want to check ${
+          todos.filter((t) => t.status !== "Done").length
+        } pending items.`;
+      res.json({ answer: basicAnswer });
+    }
+  } catch (dbError) {
+    console.error("Database error:", dbError);
+    res.status(500).json({ error: "Failed to fetch task data" });
   }
 });
-
 module.exports = {
   suggestTasks,
   getWeeklySummary,
