@@ -18,16 +18,10 @@ const TodoPage = () => {
   const handleDragEnd = (result) => {
     console.log("Source:", result.source);
     console.log("Destination:", result.destination);
+
     if (!result.destination) return;
 
-    if (result.destination.index !== result.source.index) {
-      dispatch(
-        reorderTodos({
-          startIndex: result.source.index,
-          endIndex: result.destination.index,
-        })
-      );
-    }
+    if (result.destination.index === result.source.index) return;
 
     dispatch(
       reorderTodos({
@@ -35,9 +29,6 @@ const TodoPage = () => {
         endIndex: result.destination.index,
       })
     );
-
-    // Optional: Send update to backend to persist order
-    // You'll need to add a new API endpoint for this
   };
 
   return (
@@ -68,20 +59,16 @@ const TodoPage = () => {
                     {todos.map((todo, index) => (
                       <Draggable
                         key={todo._id}
-                        draggableId={todo._id}
+                        draggableId={todo._id.toString()}
                         index={index}
                       >
                         {(provided, snapshot) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            className={`${
-                              snapshot.isDragging ? "bg-blue-50" : "bg-white"
-                            }`}
-                          >
-                            <TodoItem todo={todo} />
-                          </div>
+                          <TodoItem
+                            todo={todo}
+                            innerRef={provided.innerRef}
+                            draggableProps={provided.draggableProps}
+                            dragHandleProps={provided.dragHandleProps}
+                          />
                         )}
                       </Draggable>
                     ))}

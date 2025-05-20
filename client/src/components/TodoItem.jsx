@@ -6,6 +6,7 @@ import {
   TrashIcon,
   CheckIcon,
   XMarkIcon,
+  ArrowsUpDownIcon,
 } from "@heroicons/react/24/solid";
 
 const priorityColors = {
@@ -20,7 +21,7 @@ const statusColors = {
   Done: "bg-purple-100 text-purple-800",
 };
 
-const TodoItem = ({ todo }) => {
+const TodoItem = ({ todo, dragHandleProps, draggableProps, innerRef }) => {
   const dispatch = useDispatch();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
@@ -52,7 +53,11 @@ const TodoItem = ({ todo }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 mb-4">
+    <div
+      ref={innerRef}
+      {...draggableProps}
+      className="bg-white rounded-lg shadow p-4 mb-4"
+    >
       {isEditing ? (
         <div className="space-y-3">
           <input
@@ -113,16 +118,31 @@ const TodoItem = ({ todo }) => {
       ) : (
         <div>
           <div className="flex justify-between items-start">
-            <h3 className="text-lg font-medium">{todo.title}</h3>
+            <div className="flex items-center">
+              {/* Drag handle with proper props */}
+              <div
+                {...dragHandleProps}
+                className="mr-2 cursor-grab active:cursor-grabbing"
+              >
+                <ArrowsUpDownIcon className="h-4 w-4 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium">{todo.title}</h3>
+            </div>
             <div className="flex space-x-2">
               <button
-                onClick={() => setIsEditing(true)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditing(true);
+                }}
                 className="p-1 text-blue-500 hover:text-blue-700"
               >
                 <PencilIcon className="h-5 w-5" />
               </button>
               <button
-                onClick={handleDelete}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete();
+                }}
                 className="p-1 text-red-500 hover:text-red-700"
               >
                 <TrashIcon className="h-5 w-5" />
