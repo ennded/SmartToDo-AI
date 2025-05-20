@@ -4,6 +4,7 @@ import { createTodo } from "../features/todos/todoSlice";
 
 const TodoForm = () => {
   const dispatch = useDispatch();
+  const [selectedTags, setSelectedTags] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
     status: "To Do",
@@ -27,6 +28,7 @@ const TodoForm = () => {
       status: "To Do",
       priority: "Medium",
       dueDate: "",
+      tags: selectedTags.map((tag) => tag.value),
     });
   };
 

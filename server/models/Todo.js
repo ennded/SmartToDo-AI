@@ -28,6 +28,10 @@ const todoSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  tags: {
+    type: [String],
+    default: [],
+  },
 });
 
 todoSchema.virtual("isOverdue").get(function () {

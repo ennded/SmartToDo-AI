@@ -5,7 +5,7 @@ const Todo = require("../models/Todo");
 // @route   GET /api/todos
 // @access  Private
 const getTodos = asyncHandler(async (req, res) => {
-  const { status, priority, sort } = req.query;
+  const { status, priority, sort, tags } = req.query;
 
   const query = { user: req.user._id };
 
@@ -15,6 +15,10 @@ const getTodos = asyncHandler(async (req, res) => {
 
   if (priority) {
     query.priority = priority;
+  }
+
+  if (tags) {
+    query.tags = { $in: tags.split(",") };
   }
 
   let sortOption = { createdAt: -1 };
@@ -33,7 +37,7 @@ const getTodos = asyncHandler(async (req, res) => {
 // @route   POST /api/todos
 // @access  Private
 const createTodo = asyncHandler(async (req, res) => {
-  const { title, status, priority, dueDate } = req.body;
+  const { title, status, priority, dueDate, tags } = req.body;
 
   if (!title) {
     res.status(400);
@@ -46,6 +50,7 @@ const createTodo = asyncHandler(async (req, res) => {
     priority: priority || "Medium",
     dueDate,
     user: req.user._id,
+    tags: tags || [],
   });
 
   res.status(201).json(todo);

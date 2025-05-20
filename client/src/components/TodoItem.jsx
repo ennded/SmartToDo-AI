@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { updateTodo, deleteTodo } from "../features/todos/todoSlice";
+import { getTagColor } from "../config/tags";
 import {
   PencilIcon,
   TrashIcon,
@@ -166,11 +167,33 @@ const TodoItem = ({ todo, dragHandleProps, draggableProps, innerRef }) => {
               {todo.priority}
             </span>
             {todo.dueDate && (
-              <span className="px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
+              <span
+                className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                  new Date(todo.dueDate) < new Date()
+                    ? "bg-red-100 text-red-800 animate-pulse"
+                    : "bg-gray-100 text-gray-800"
+                }`}
+              >
                 Due: {new Date(todo.dueDate).toLocaleDateString()}
+                {new Date(todo.dueDate) < new Date() && " (Overdue!)"}
               </span>
             )}
           </div>
+
+          {todo.tags?.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {todo.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className={`px-2 py-1 text-xs font-medium rounded-full ${getTagColor(
+                    tag
+                  )}`}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
