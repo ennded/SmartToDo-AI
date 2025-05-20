@@ -110,6 +110,13 @@ const todoSlice = createSlice({
       state.isSuccess = false;
       state.message = "";
     },
+    reorderTodos: (state, action) => {
+      const { startIndex, endIndex } = action.payload;
+      const newTodos = [...state.todos];
+      const [removed] = newTodos.splice(startIndex, 1);
+      newTodos.splice(endIndex, 0, removed);
+      state.todos = newTodos;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -170,5 +177,5 @@ const todoSlice = createSlice({
   },
 });
 
-export const { reset } = todoSlice.actions;
+export const { reset, reorderTodos } = todoSlice.actions;
 export default todoSlice.reducer;

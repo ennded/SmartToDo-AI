@@ -4,6 +4,8 @@ import { getTodos } from "../features/todos/todoSlice";
 import TodoForm from "../components/TodoForm";
 import TodoItem from "../components/TodoItem";
 import { Bars } from "react-loader-spinner";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { reorderTodos } from "../features/todos/todoSlice";
 
 const TodoPage = () => {
   const dispatch = useDispatch();
@@ -12,6 +14,31 @@ const TodoPage = () => {
   useEffect(() => {
     dispatch(getTodos());
   }, [dispatch]);
+
+  const handleDragEnd = (result) => {
+    console.log("Source:", result.source);
+    console.log("Destination:", result.destination);
+    if (!result.destination) return;
+
+    if (result.destination.index !== result.source.index) {
+      dispatch(
+        reorderTodos({
+          startIndex: result.source.index,
+          endIndex: result.destination.index,
+        })
+      );
+    }
+
+    dispatch(
+      reorderTodos({
+        startIndex: result.source.index,
+        endIndex: result.destination.index,
+      })
+    );
+
+    // Optional: Send update to backend to persist order
+    // You'll need to add a new API endpoint for this
+  };
 
   return (
     <div>
@@ -30,11 +57,39 @@ const TodoPage = () => {
               <p className="text-gray-500">No tasks yet. Add one above!</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {todos.map((todo) => (
-                <TodoItem key={todo._id} todo={todo} />
-              ))}
-            </div>
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="todos">
+                {(provided) => (
+                  <div
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                    className="space-y-4"
+                  >
+                    {todos.map((todo, index) => (
+                      <Draggable
+                        key={todo._id}
+                        draggableId={todo._id}
+                        index={index}
+                      >
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            className={`${
+                              snapshot.isDragging ? "bg-blue-50" : "bg-white"
+                            }`}
+                          >
+                            <TodoItem todo={todo} />
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
           )}
         </div>
 

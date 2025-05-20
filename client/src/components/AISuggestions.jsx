@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { suggestTasks } from "../features/ai/aiSlice";
 import TodoForm from "./TodoForm";
+import VoiceInput from "./VoiceInput";
 
 const AISuggestions = () => {
   const dispatch = useDispatch();
@@ -33,6 +34,7 @@ const AISuggestions = () => {
             placeholder="E.g., 'Book flight tickets and finish presentation by Thursday'"
             disabled={isLoading}
           />
+          <VoiceInput onResult={(text) => setInput(text)} />
           <button
             type="submit"
             className="bg-blue-600 text-white px-4 py-3 rounded-r-lg hover:bg-blue-700 transition disabled:bg-blue-400"

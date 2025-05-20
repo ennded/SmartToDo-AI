@@ -30,4 +30,18 @@ const todoSchema = new mongoose.Schema({
   },
 });
 
+todoSchema.virtual("isOverdue").get(function () {
+  return this.dueDate && this.status !== "Done" && this.dueDate < new Date();
+});
+
+todoSchema.virtual("isDueToday").get(function () {
+  if (!this.dueDate) return false;
+  const today = new Date();
+  return (
+    this.dueDate.getDate() === today.getDate() &&
+    this.dueDate.getMonth() === today.getMonth() &&
+    this.dueDate.getFullYear() === today.getFullYear() &&
+    this.status !== "Done"
+  );
+});
 module.exports = mongoose.model("Todo", todoSchema);
