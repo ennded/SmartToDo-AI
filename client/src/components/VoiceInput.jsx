@@ -1,10 +1,15 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { BsFillMicFill, BsFillMicMuteFill } from "react-icons/bs";
 
 const VoiceInput = ({ onResult }) => {
   const [isListening, setIsListening] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
   const [recognition, setRecognition] = useState(null);
+
+  const isListeningRef = useRef(isListening);
+  useEffect(() => {
+    isListeningRef.current = isListening;
+  }, [isListening]);
 
   const handleResult = useCallback(
     (transcript) => {
@@ -21,7 +26,7 @@ const VoiceInput = ({ onResult }) => {
   }, [recognition]);
 
   const startListening = useCallback(() => {
-    if (recognition && !isListening) {
+    if (recognition && !isListeningRef.current) {
       try {
         recognition.start();
         setIsListening(true);
@@ -29,7 +34,32 @@ const VoiceInput = ({ onResult }) => {
         console.error("Error starting recognition:", err);
       }
     }
-  }, [recognition, isListening]);
+  }, [recognition]);
+
+  // const handleResult = useCallback(
+  //   (transcript) => {
+  //     onResult(transcript);
+  //   },
+  //   [onResult]
+  // );
+
+  // const stopListening = useCallback(() => {
+  //   if (recognition) {
+  //     recognition.stop();
+  //     setIsListening(false);
+  //   }
+  // }, [recognition]);
+
+  // const startListening = useCallback(() => {
+  //   if (recognition && !isListening) {
+  //     try {
+  //       recognition.start();
+  //       setIsListening(true);
+  //     } catch (err) {
+  //       console.error("Error starting recognition:", err);
+  //     }
+  //   }
+  // }, [recognition, isListening]);
 
   useEffect(() => {
     const SpeechRecognition =
@@ -52,8 +82,8 @@ const VoiceInput = ({ onResult }) => {
       };
 
       recognitionInstance.onend = () => {
-        if (isListening) {
-          startListening();
+        if (isListeningRef.current) {
+          recognitionInstance.start();
         }
       };
 
@@ -61,9 +91,9 @@ const VoiceInput = ({ onResult }) => {
     }
 
     return () => {
-      stopListening();
+      if (recognition) recognition.stop();
     };
-  }, [handleResult, isListening, startListening, stopListening]);
+  }, [handleResult]);
 
   const toggleListening = () => {
     if (!isSupported) return;

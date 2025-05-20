@@ -24,7 +24,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "GENERATE_SW=true react-scripts build",
+   "build": "cross-env GENERATE_SW=true react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -52,6 +52,7 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
     "autoprefixer": "^10.4.21",
+    "cross-env": "^7.0.3",
     "cypress": "^14.3.3",
     "jest": "^29.7.0",
     "msw": "^2.8.4",
