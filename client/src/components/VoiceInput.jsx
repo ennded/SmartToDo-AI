@@ -9,7 +9,7 @@ const VoiceInput = ({ onResult }) => {
   const isListeningRef = useRef(isListening);
   useEffect(() => {
     isListeningRef.current = isListening;
-  }, [isListening]);
+  }, [isListening, recognition]);
 
   const handleResult = useCallback(
     (transcript) => {

@@ -4,7 +4,7 @@ import { createTodo } from "../features/todos/todoSlice";
 
 const TodoForm = () => {
   const dispatch = useDispatch();
-  const [selectedTags, setSelectedTags] = useState([]);
+  const [selectedTags] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
     status: "To Do",

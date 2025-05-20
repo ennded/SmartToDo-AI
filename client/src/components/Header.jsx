@@ -8,15 +8,15 @@ const Header = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
 
-  const handleNavigation = (path) => {
-    if (location.pathname === path) {
-      // Force a reload if already on the target path
-      navigate(path);
-      window.location.reload();
-    } else {
-      navigate(path);
-    }
-  };
+  // const handleNavigation = (path) => {
+  //   if (location.pathname === path) {
+  //     // Force a reload if already on the target path
+  //     navigate(path);
+  //     window.location.reload();
+  //   } else {
+  //     navigate(path);
+  //   }
+  // };
 
   const onLogout = () => {
     dispatch(logout());

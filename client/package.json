@@ -24,7 +24,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-   "build": "cross-env GENERATE_SW=true react-scripts build",
+    "build": "cross-env GENERATE_SW=true CI='' react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
