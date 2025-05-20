@@ -1,8 +1,8 @@
 // server.js
 const app = require("./app");
 
-const PORT = process.env.PORT || 5000;
+module.exports = app;
 
-app.listen(PORT, () => {
-  console.log(`Server running on ${PORT}`);
-});
+if (process.env.VERCEL !== "1") {
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}

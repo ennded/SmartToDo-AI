@@ -29,14 +29,12 @@ jest.mock("openai", () => {
 let token;
 
 beforeAll(async () => {
-  // Optional: Register test user (comment this if user already exists)
   await request(app).post("/api/auth/register").send({
     name: "Test User",
     email: "testuser@example.com",
     password: "testpassword",
   });
 
-  // Login to get the JWT token
   const res = await request(app)
     .post("/api/auth/login")
     .send({ email: "testuser@example.com", password: "testpassword" });
@@ -50,7 +48,6 @@ beforeAll(async () => {
 
 describe("AI Service", () => {
   test("Generate task suggestions", async () => {
-    // Mock OpenAI response
     openai.chat.completions.create.mockResolvedValue({
       choices: [
         {
@@ -65,7 +62,7 @@ describe("AI Service", () => {
 
     const res = await request(app)
       .post("/api/ai/suggest-tasks")
-      .set("Authorization", `Bearer ${token}`) // Use dynamic token
+      .set("Authorization", `Bearer ${token}`)
       .send({ input: "test input" });
 
     expect(res.statusCode).toBe(200);

@@ -11,10 +11,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 function App() {
   const location = useLocation();
 
-  // This effect will run when the route changes
-  useEffect(() => {
-    // You can add any route-change logic here if needed
-  }, [location]);
+  useEffect(() => {}, [location]);
 
   return (
     <Routes>

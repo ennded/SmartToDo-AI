@@ -15,16 +15,15 @@ async function listModels() {
     console.log("Available OpenAI Models:", availableModels);
   } catch (err) {
     console.error("Failed to fetch models list:", err);
-    // Fallback to commonly available models
+
     availableModels = ["gpt-3.5-turbo", "gpt-4"];
   }
 }
 
 listModels();
 
-// @desc    Get AI task suggestions
 // @route   POST /api/ai/suggest-tasks
-// @access  Private
+
 const suggestTasks = asyncHandler(async (req, res) => {
   const { input } = req.body;
 
@@ -58,8 +57,6 @@ const suggestTasks = asyncHandler(async (req, res) => {
   `;
 
   try {
-    // Use cached models to avoid quota issues
-
     const model = availableModels.includes("gpt-3.5-turbo")
       ? "gpt-3.5-turbo"
       : availableModels[0] || "gpt-3.5-turbo";
@@ -68,7 +65,7 @@ const suggestTasks = asyncHandler(async (req, res) => {
       model,
       messages: [{ role: "user", content: prompt }],
       temperature: 0.7,
-      max_tokens: 500, // Limit token usage
+      max_tokens: 500,
     });
 
     const content = response.choices[0].message.content;
@@ -84,7 +81,6 @@ const suggestTasks = asyncHandler(async (req, res) => {
       res.json(tasks);
     } catch (parseError) {
       console.error("JSON Parse Error:", parseError);
-      // Fallback to manual parsing if JSON fails
       const fallbackTasks = content
         .split("\n")
         .filter((line) => line.trim().startsWith("-"))
@@ -100,8 +96,6 @@ const suggestTasks = asyncHandler(async (req, res) => {
     }
   } catch (err) {
     console.error("OpenAI API error:", err);
-
-    // Provide fallback suggestions when API fails
 
     const fallbackResponse = [
       {
@@ -136,9 +130,8 @@ const suggestTasks = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Get weekly summary
 // @route   POST /api/ai/weekly-summary
-// @access  Private
+
 const getWeeklySummary = asyncHandler(async (req, res) => {
   try {
     const todos = await Todo.find({
@@ -154,7 +147,7 @@ const getWeeklySummary = asyncHandler(async (req, res) => {
       return;
     }
 
-    const prompt = `...`; // Your existing prompt
+    const prompt = `...`;
 
     try {
       const model = availableModels.includes("gpt-3.5-turbo")
@@ -172,7 +165,6 @@ const getWeeklySummary = asyncHandler(async (req, res) => {
       res.json({ summary });
     } catch (apiError) {
       console.error("OpenAI API error:", apiError);
-      // Create manual summary if API fails
       const manualSummary = `You completed ${
         todos.length
       } tasks this week including: ${todos
@@ -187,9 +179,8 @@ const getWeeklySummary = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Get AI answers about tasks
 // @route   POST /api/ai/chat
-// @access  Private
+
 const taskChat = asyncHandler(async (req, res) => {
   const { question } = req.body;
 
@@ -200,10 +191,9 @@ const taskChat = asyncHandler(async (req, res) => {
 
   try {
     const todos = await Todo.find({ user: req.user._id });
-    const prompt = `...`; // Your existing prompt
+    const prompt = `...`;
 
     try {
-      // Try cheaper model first to save quota
       const model = availableModels.includes("gpt-3.5-turbo")
         ? "gpt-3.5-turbo"
         : availableModels.includes("gpt-4")
@@ -221,7 +211,7 @@ const taskChat = asyncHandler(async (req, res) => {
       res.json({ answer });
     } catch (apiError) {
       console.error("OpenAI API error:", apiError);
-      // Provide basic answer without AI
+
       const basicAnswer =
         `I can't access AI right now. Based on your ${todos.length} tasks, ` +
         `you might want to check ${
