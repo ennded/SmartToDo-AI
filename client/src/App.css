@@ -36,3 +36,21 @@
     transform: rotate(360deg);
   }
 }
+
+/* Add to your main CSS file */
+[data-rbd-drag-handle-context-id] {
+  cursor: grab;
+}
+
+[data-rbd-drag-handle-context-id]:active {
+  cursor: grabbing;
+}
+
+[data-rbd-draggable-context-id] {
+  transition: transform 0.2s ease;
+}
+
+[data-rbd-draggable-context-id][data-rbd-dragging="true"] {
+  z-index: 100;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}

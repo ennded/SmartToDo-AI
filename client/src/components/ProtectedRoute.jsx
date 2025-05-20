@@ -9,8 +9,7 @@ const ProtectedRoute = () => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Force remount when path changes
-  return <Outlet key={location.pathname} />;
+  return <Outlet />;
 };
 
 export default ProtectedRoute;

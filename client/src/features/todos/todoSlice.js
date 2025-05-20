@@ -111,10 +111,10 @@ const todoSlice = createSlice({
       state.message = "";
     },
     reorderTodos: (state, action) => {
-      const { startIndex, endIndex } = action.payload;
+      const { sourceIndex, destinationIndex } = action.payload;
       const newTodos = [...state.todos];
-      const [removed] = newTodos.splice(startIndex, 1);
-      newTodos.splice(endIndex, 0, removed);
+      const [removed] = newTodos.splice(sourceIndex, 1);
+      newTodos.splice(destinationIndex, 0, removed);
       state.todos = newTodos;
     },
   },
