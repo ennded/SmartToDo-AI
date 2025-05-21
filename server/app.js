@@ -20,19 +20,16 @@ console.log(
   process.env.MONGODB_URI || process.env.DATABASE_URL
 );
 
-// Allow specific origins
-const allowedOrigins = [
-  "https://smart-to-do-ai.vercel.app", // Production
-  "http://localhost:3000", // Development
-];
-
 // CORS
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin:
+      process.env.NODE_ENV === "production"
+        ? "https://smart-to-do-hi0qc599i-enndeds-projects.vercel.app"
+        : "http://localhost:3000",
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true, // If using cookies/auth headers
+    credentials: true,
   })
 );
 
