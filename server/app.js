@@ -32,8 +32,14 @@ console.log(
 // CORS
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    rigin: [
+      "https://smart-to-do-hi0qc599i-enndeds-projects.vercel.app",
+      "https://smart-to-do-ai.vercel.app",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
+    exposedHeaders: ["Set-Cookie"],
   })
 );
 
@@ -64,6 +70,7 @@ mongoose
   .then(() => console.log("mongoDB connected..."))
   .catch((err) => console.error("MongoDB connection error:", err));
 
+app.options("*", cors());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/todos", todoRoutes);
