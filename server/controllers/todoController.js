@@ -1,158 +1,98 @@
 const asyncHandler = require("express-async-handler");
 const Todo = require("../models/Todo");
-const { createClient } = require("@supabase/supabase-js");
-const supabase = createClient(
-  process.env.SUPABASE_URL || "https://vchlrffxvafmyrlvwvup.supabase.co",
-  process.env.SUPABASE_KEY ||
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjaGxyZmZ4dmFmbXlybHZ3dnVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NjgxMDgsImV4cCI6MjA2MzM0NDEwOH0.0fzusl9X7gHzBJGYL1ijDrHV1pjNIq3kyTl4jTgHlK8"
-);
 
 // @route GET /api/todos
 const getTodos = asyncHandler(async (req, res) => {
   const { status, priority, sort, tags } = req.query;
-  const userId = req.user._id; // assuming you have user auth middleware
+  const userId = req.user._id;
 
-  let query = supabase.from("todos").select("*").eq("user_id", userId);
+  // Build filter object
+  const filter = { user: userId };
+  if (status) filter.status = status;
+  if (priority) filter.priority = priority;
+  if (tags) filter.tags = { $in: tags.split(",") };
 
-  if (status) {
-    query = query.eq("status", status);
-  }
-  if (priority) {
-    query = query.eq("priority", priority);
-  }
-  if (tags) {
-    const tagsArray = tags.split(",");
-    query = query.overlaps("tags", tagsArray); // assuming "tags" is a Postgres array column
-  }
-
-  // Sorting
+  // Build sort object
+  let sortOptions = {};
   if (sort === "dueDate") {
-    query = query.order("due_date", { ascending: true });
+    sortOptions.dueDate = 1; // Ascending
   } else if (sort === "priority") {
-    query = query.order("priority", { ascending: false });
+    // Custom priority sorting (High > Medium > Low)
+    sortOptions.priority = -1;
   } else {
-    query = query.order("created_at", { ascending: false });
+    sortOptions.createdAt = -1; // Newest first
   }
 
-  const { data, error } = await query;
-
-  if (error) {
-    res.status(500);
-    throw new Error(error.message);
-  }
-  res.json(data);
+  const todos = await Todo.find(filter).sort(sortOptions);
+  res.json(todos);
 });
 
 // @route POST /api/todos
 const createTodo = asyncHandler(async (req, res) => {
   const { title, status, priority, dueDate, tags } = req.body;
+
   if (!title) {
     res.status(400);
     throw new Error("Title is required");
   }
 
-  const { data, error } = await supabase
-    .from("todos")
-    .insert([
-      {
-        title,
-        status: status || "To Do",
-        priority: priority || "Medium",
-        due_date: dueDate,
-        user_id: req.user._id,
-        tags: tags || [],
-      },
-    ])
-    .select()
-    .single();
+  const todo = await Todo.create({
+    title,
+    status: status || "To Do",
+    priority: priority || "Medium",
+    dueDate,
+    tags: tags || [],
+    user: req.user._id,
+  });
 
-  if (error) {
-    res.status(500);
-    throw new Error(error.message);
-  }
-  res.status(201).json(data);
+  res.status(201).json(todo);
 });
 
 // @route PUT /api/todos/:id
 const updateTodo = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const { title, status, priority, dueDate, tags } = req.body;
-
-  // Fetch the todo first to check ownership
-  let { data: todo, error } = await supabase
-    .from("todos")
-    .select("*")
-    .eq("id", id)
-    .single();
-
-  if (error || !todo) {
+  const todo = await Todo.findById(req.params.id);
+  if (!todo) {
     res.status(404);
     throw new Error("Todo not found");
   }
 
-  if (todo.user_id !== req.user._id) {
+  // Check ownership
+  if (todo.user.toString() !== req.user._id.toString()) {
     res.status(401);
-    throw new Error("Not authorized to update this todo");
+    throw new Error("Not authorized");
   }
 
-  const { data, error: updateError } = await supabase
-    .from("todos")
-    .update({
-      title: title || todo.title,
-      status: status || todo.status,
-      priority: priority || todo.priority,
-      due_date: dueDate || todo.due_date,
-      tags: tags || todo.tags,
-    })
-    .eq("id", id)
-    .select()
-    .single();
+  const updatedTodo = await Todo.findByIdAndUpdate(
+    req.params.id,
+    {
+      title: req.body.title || todo.title,
+      status: req.body.status || todo.status,
+      priority: req.body.priority || todo.priority,
+      dueDate: req.body.dueDate || todo.dueDate,
+      tags: req.body.tags || todo.tags,
+    },
+    { new: true } // Return updated document
+  );
 
-  if (updateError) {
-    res.status(500);
-    throw new Error(updateError.message);
-  }
-
-  res.json(data);
+  res.json(updatedTodo);
 });
 
 // @route DELETE /api/todos/:id
 const deleteTodo = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-
-  // Fetch to check ownership
-  const { data: todo, error } = await supabase
-    .from("todos")
-    .select("*")
-    .eq("id", id)
-    .single();
-
-  if (error || !todo) {
+  const todo = await Todo.findById(req.params.id);
+  if (!todo) {
     res.status(404);
     throw new Error("Todo not found");
   }
 
-  if (todo.user_id !== req.user._id) {
+  // Check ownership
+  if (todo.user.toString() !== req.user._id.toString()) {
     res.status(401);
-    throw new Error("Not authorized to delete this todo");
+    throw new Error("Not authorized");
   }
 
-  const { error: deleteError } = await supabase
-    .from("todos")
-    .delete()
-    .eq("id", id);
-
-  if (deleteError) {
-    res.status(500);
-    throw new Error(deleteError.message);
-  }
-
-  res.json({ message: "Todo removed" });
+  await todo.deleteOne();
+  res.json({ message: "Todo deleted successfully" });
 });
 
-module.exports = {
-  getTodos,
-  createTodo,
-  updateTodo,
-  deleteTodo,
-};
+module.exports = { getTodos, createTodo, updateTodo, deleteTodo };

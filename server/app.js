@@ -1,7 +1,9 @@
-// app.js
 require("dotenv").config();
+require("./config/passport");
 const express = require("express");
+const session = require("express-session");
 const mongoose = require("mongoose");
+const passport = require("passport");
 const cors = require("cors");
 const morgan = require("morgan");
 
@@ -13,8 +15,22 @@ const { errorHandler } = require("./middleware/errorMiddleware");
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000", // Allow React dev server
+    credentials: true, // Enable cookies/sessions
+  })
+);
 app.use(express.json());
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(morgan("dev"));
 
 // Connect to MongoDB

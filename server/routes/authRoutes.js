@@ -1,13 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-
-// Google OAuth
-router.get(
-  "/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
-
 const {
   registerUser,
   loginUser,
@@ -15,6 +8,11 @@ const {
 } = require("../controllers/authController");
 const { protect } = require("../middleware/authMiddleware");
 
+// Google OAuth
+router.get(
+  "/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
 router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
