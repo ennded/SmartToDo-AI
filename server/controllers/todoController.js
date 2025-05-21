@@ -2,8 +2,9 @@ const asyncHandler = require("express-async-handler");
 const Todo = require("../models/Todo");
 const { createClient } = require("@supabase/supabase-js");
 const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_KEY
+  process.env.SUPABASE_URL || "https://vchlrffxvafmyrlvwvup.supabase.co",
+  process.env.SUPABASE_KEY ||
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjaGxyZmZ4dmFmbXlybHZ3dnVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NjgxMDgsImV4cCI6MjA2MzM0NDEwOH0.0fzusl9X7gHzBJGYL1ijDrHV1pjNIq3kyTl4jTgHlK8"
 );
 
 // @route GET /api/todos
