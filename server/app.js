@@ -1,3 +1,4 @@
+// app.js (Corrected)
 require("dotenv").config();
 require("./config/passport");
 const express = require("express");
@@ -15,35 +16,22 @@ const { errorHandler } = require("./middleware/errorMiddleware");
 
 const app = express();
 
-// Headers
-app.use((req, res, next) => {
-  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
-  res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
-  res.setHeader("Access-Control-Allow-Origin", process.env.CLIENT_URL);
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  next();
-});
-
-console.log(
-  "Loaded Mongo URI:",
-  process.env.MONGODB_URI || process.env.DATABASE_URL
-);
-
-// CORS
+// CORS Configuration
 app.use(
   cors({
-    rigin: [
+    origin: [
       "https://smart-to-do-hi0qc599i-enndeds-projects.vercel.app",
       "https://smart-to-do-ai.vercel.app",
+      "http://localhost:3000",
     ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
-    exposedHeaders: ["Set-Cookie"],
+    exposedHeaders: ["set-cookie"],
   })
 );
 
-// Session Config
+// Session Configuration
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "fallback-dev-secret-123",
@@ -54,7 +42,11 @@ app.use(
     }),
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false },
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 604800000, // 1 week
+    },
   })
 );
 
@@ -70,7 +62,6 @@ mongoose
   .then(() => console.log("mongoDB connected..."))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-app.options("*", cors());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/todos", todoRoutes);
@@ -78,6 +69,7 @@ app.use("/api/ai", aiRoutes);
 app.get("/", (req, res) => {
   res.send("SmartToDo AI backend is running 🚀");
 });
+
 // Error Handling
 app.use(errorHandler);
 
