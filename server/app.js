@@ -15,6 +15,15 @@ const { errorHandler } = require("./middleware/errorMiddleware");
 
 const app = express();
 
+// Headers
+app.use((req, res, next) => {
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+  res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+  res.setHeader("Access-Control-Allow-Origin", process.env.CLIENT_URL);
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  next();
+});
+
 console.log(
   "Loaded Mongo URI:",
   process.env.MONGODB_URI || process.env.DATABASE_URL
@@ -23,17 +32,10 @@ console.log(
 // CORS
 app.use(
   cors({
-    origin:
-      process.env.NODE_ENV === "production"
-        ? "https://smart-to-do-hi0qc599i-enndeds-projects.vercel.app"
-        : "http://localhost:3000",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    origin: process.env.CLIENT_URL,
     credentials: true,
   })
 );
-
-app.options("*", cors());
 
 // Session Config
 app.use(
@@ -46,7 +48,7 @@ app.use(
     }),
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: process.env.NODE_ENV === "production" },
+    cookie: { secure: false },
   })
 );
 
