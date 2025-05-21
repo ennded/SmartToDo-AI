@@ -6,12 +6,19 @@ const OAuthButton = () => {
 
   return (
     <GoogleLogin
+      clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
+      buttonText="Continue with Google"
       onSuccess={async (credentialResponse) => {
         try {
-          const res = await fetch("/api/auth/google", {
-            method: "GET",
-            credentials: "include",
-          });
+          const res = await fetch(
+            `${process.env.REACT_APP_API_URL}/auth/google`,
+            {
+              method: "GET",
+              credentials: "include",
+            }
+          );
+
+          if (!res.ok) throw new Error("Auth failed");
           const { token } = await res.json();
 
           localStorage.setItem("user", JSON.stringify({ token }));
@@ -24,6 +31,8 @@ const OAuthButton = () => {
         console.log("Google login failed");
       }}
       useOneTap
+      cookiePolicy="single_host_origin"
+      ux_mode="redirect"
     />
   );
 };

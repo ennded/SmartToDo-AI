@@ -14,13 +14,25 @@ const { errorHandler } = require("./middleware/errorMiddleware");
 
 const app = express();
 
+// Add these headers before routes
+app.use((req, res, next) => {
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+  res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+  res.setHeader("Access-Control-Allow-Origin", process.env.CLIENT_URL);
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  next();
+});
+
 // Middleware
 app.use(
   cors({
-    origin: "http://localhost:3000", // Allow React dev server
-    credentials: true, // Enable cookies/sessions
+    origin: process.env.CLIENT_URL || "http://localhost:3000", // Fallback
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
 app.use(express.json());
 app.use(
   session({
