@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+
 import { toast } from "react-toastify";
 import api from "../../api/client";
 
@@ -9,13 +9,22 @@ export const registerUser = createAsyncThunk(
   async (userData, thunkAPI) => {
     try {
       const response = await api.post("/auth/register", userData);
-      if (response.data) {
-        localStorage.setItem("user", JSON.stringify(response.data));
+      // Add the same structure here
+      if (response.data?.token) {
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            token: response.data.token,
+            ...response.data,
+          })
+        );
       }
-      return response.data;
     } catch (error) {
-      const message =
-        error.response?.data?.message || error.message || error.toString();
+      // Enhanced error handling
+      let message = error.response?.data?.message || error.message;
+      if (!message && error.response?.status === 404) {
+        message = "API endpoint not found - check network configuration";
+      }
       toast.error(message);
       return thunkAPI.rejectWithValue(message);
     }
@@ -27,8 +36,11 @@ export const loginUser = createAsyncThunk(
   async (userData, thunkAPI) => {
     try {
       const response = await api.post("/auth/login", userData);
-      if (response.data) {
-        localStorage.setItem("user", JSON.stringify(response.data));
+      if (response.data?.token) {
+        localStorage.setItem(
+          "user",
+          JSON.stringify({ token: response.data.token, ...response.data })
+        );
       }
       return response.data;
     } catch (error) {

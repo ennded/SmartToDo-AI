@@ -19,15 +19,8 @@ const app = express();
 // CORS Configuration
 app.use(
   cors({
-    origin: [
-      "https://smart-to-do-hi0qc599i-enndeds-projects.vercel.app",
-      "https://smart-to-do-ai.vercel.app",
-      "http://localhost:3000",
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    origin: ["http://localhost:3000"],
     credentials: true,
-    exposedHeaders: ["set-cookie"],
   })
 );
 

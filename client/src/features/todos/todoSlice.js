@@ -2,14 +2,15 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const API_URL = "/api/todos";
+const API_URL = `${process.env.REACT_APP_API_BASE_URL}/todos`; // Remove extra "/api"
 
 // Async thunks
 export const getTodos = createAsyncThunk(
   "todos/getTodos",
   async (_, thunkAPI) => {
     try {
-      const token = thunkAPI.getState().auth.user.token;
+      const token = thunkAPI.getState().auth.user?.token;
+      console.log("Using token:", token); // Add this line
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -18,6 +19,7 @@ export const getTodos = createAsyncThunk(
       const response = await axios.get(API_URL, config);
       return response.data;
     } catch (error) {
+      console.error("Full error details:", error.response);
       const message =
         error.response?.data?.message || error.message || error.toString();
       toast.error(message);
