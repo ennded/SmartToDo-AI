@@ -16,14 +16,25 @@ const { errorHandler } = require("./middleware/errorMiddleware");
 
 const app = express();
 
+// Allow your Vercel frontend
+const allowedOrigins = [
+  "https://smart-to-do-*-enndeds-projects.vercel.app", // Wildcard for Vercel branches
+  "https://smart-to-do-cnk976vdo-enndeds-projects.vercel.app", // Specific URL
+  process.env.CLIENT_URL, // Add this to .env
+];
 // CORS Configuration
+
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
 
+// Handle preflight requests
+app.options("*", cors());
 // Session Configuration
 app.use(
   session({
