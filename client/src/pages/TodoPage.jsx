@@ -3,8 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { getTodos } from "../features/todos/todoSlice";
 import TodoForm from "../components/TodoForm";
 import TodoItem from "../components/TodoItem";
-import { Bars } from "react-loader-spinner";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { DotSpinner } from "@uiball/loaders";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { reorderTodos } from "../features/todos/todoSlice";
 
 const TodoPage = () => {
@@ -41,7 +41,7 @@ const TodoPage = () => {
 
           {isLoading ? (
             <div className="flex justify-center">
-              <Bars color="#3b82f6" height={50} width={50} />
+              <DotSpinner color="#3b82f6" height={50} width={50} />
             </div>
           ) : todos.length === 0 ? (
             <div className="text-center py-8">
