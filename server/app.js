@@ -16,13 +16,11 @@ const { errorHandler } = require("./middleware/errorMiddleware");
 
 const app = express();
 
-// Allow your Vercel frontend
 const allowedOrigins = [
-  "https://smart-to-do-*-enndeds-projects.vercel.app", // Wildcard for Vercel branches
-  "https://smart-to-do-cnk976vdo-enndeds-projects.vercel.app", // Specific URL
-  process.env.CLIENT_URL, // Add this to .env
+  "https://smart-to-do-ai.vercel.app", // Primary URL
+  "https://smart-to-do-*-enndeds-projects.vercel.app", // Wildcard for previews
+  process.env.CLIENT_URL,
 ];
-// CORS Configuration
 
 app.use(
   cors({
