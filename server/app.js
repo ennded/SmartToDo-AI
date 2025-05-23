@@ -34,7 +34,7 @@ app.use(
 );
 
 // Handle preflight requests
-app.options("*", cors());
+app.options("/api/auth/register", cors());
 // Session Configuration
 app.use(
   session({

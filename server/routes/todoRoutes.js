@@ -9,9 +9,11 @@ const {
 } = require("../controllers/todoController");
 const { protect } = require("../middleware/authMiddleware");
 
-router.route("/").get(protect, getTodos).post(protect, createTodo);
+router
+  .route("/")
+  .get(protect, getTodos)
+  .post(protect, validateTodo, createTodo);
 
 router.route("/:id").put(protect, updateTodo).delete(protect, deleteTodo);
-router.post("/", validateTodo, createTodo);
 
 module.exports = router;
