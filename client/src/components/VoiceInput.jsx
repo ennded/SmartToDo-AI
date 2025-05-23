@@ -36,31 +36,6 @@ const VoiceInput = ({ onResult }) => {
     }
   }, [recognition]);
 
-  // const handleResult = useCallback(
-  //   (transcript) => {
-  //     onResult(transcript);
-  //   },
-  //   [onResult]
-  // );
-
-  // const stopListening = useCallback(() => {
-  //   if (recognition) {
-  //     recognition.stop();
-  //     setIsListening(false);
-  //   }
-  // }, [recognition]);
-
-  // const startListening = useCallback(() => {
-  //   if (recognition && !isListening) {
-  //     try {
-  //       recognition.start();
-  //       setIsListening(true);
-  //     } catch (err) {
-  //       console.error("Error starting recognition:", err);
-  //     }
-  //   }
-  // }, [recognition, isListening]);
-
   useEffect(() => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
