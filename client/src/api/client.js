@@ -18,4 +18,16 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Response interceptor for error handling
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 403) {
+      console.error("AI Access Denied:", error);
+      alert("AI service unavailable. Please try again later.");
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;
