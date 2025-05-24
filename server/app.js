@@ -50,7 +50,7 @@ app.use(
 );
 
 // Handle preflight request
-app.options("*", cors());
+// app.options("*", cors());
 // Session Configuration
 app.use(
   session({
