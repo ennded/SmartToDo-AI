@@ -22,17 +22,35 @@ const app = express();
 //   process.env.CLIENT_URL,
 // ];
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://smart-to-do-ai.vercel.app",
+];
 app.use(
   cors({
-    origin: "https://smart-to-do-ai.vercel.app" || "http://localhost:3000",
+    origin: function (origin, callback) {
+      console.log("CORS origin:", origin);
+      // Allow requests with no origin like mobile apps or curl
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "OpenAI-Organization"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "OpenAI-Organization",
+      "Accept",
+      "X-Requested-With",
+    ],
     credentials: true,
   })
 );
 
 // Handle preflight request
-// app.options("/api/auth/register", cors());
+app.options("*", cors());
 // Session Configuration
 app.use(
   session({
