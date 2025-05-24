@@ -41,7 +41,7 @@ export const getWeeklySummary = createAsyncThunk(
         },
       };
       const response = await axios.post(
-        `${API_URL}/weekly-summary`,
+        `https://smarttodo-backend-gy8s.onrender.com/api/ai/weekly-summary`,
         {},
         config
       );
