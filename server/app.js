@@ -16,23 +16,23 @@ const { errorHandler } = require("./middleware/errorMiddleware");
 
 const app = express();
 
-const allowedOrigins = [
-  "https://smart-to-do-ai.vercel.app", // Primary URL
-  "https://smart-to-do-*-enndeds-projects.vercel.app", // Wildcard for previews
-  process.env.CLIENT_URL,
-];
+// const allowedOrigins = [
+//   "https://smart-to-do-ai.vercel.app", // Primary URL
+//   "https://smart-to-do-*-enndeds-projects.vercel.app", // Wildcard for previews
+//   process.env.CLIENT_URL,
+// ];
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: "http://localhost:3000",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "OpenAI-Organization"],
     credentials: true,
   })
 );
 
-// Handle preflight requests
-app.options("/api/auth/register", cors());
+// Handle preflight request
+// app.options("/api/auth/register", cors());
 // Session Configuration
 app.use(
   session({

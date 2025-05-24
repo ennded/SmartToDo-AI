@@ -17,9 +17,11 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  googleId: String,
-  name: String,
-  avatar: String,
+  googleId: { type: String, unique: true, sparse: true },
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 userSchema.pre("save", async function (next) {
